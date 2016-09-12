@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>5s countdown</title>
+    <style type="text/css">
+        body {
+            background: black;
+            color: #00cc33;
+            font-family: monospace;
+            text-align: center;
+        }
+        .initial .shown-after-first-attempt,
+        .started .stopped-content,
+        .stopped .started-content {
+            display:none;
+        }
+    </style>
+</head>
+<body class="initial stopped">
+    <h1>5s countdown</h1>
+    <p class="stopped-content">Click the button to start the timer</p>
+    <p class="started-content">Click the button to stop the timer</p>
+    <button id="start-button" class="stopped-content">Start countdown</button>
+    <button id="stop-button" class="started-content">Stop countdown</button>
+    <p>Target: <span id="countdown">5</span> seconds</p>
+    <h2 class="stopped-content shown-after-first-attempt">Summary</h2>
+    <p class="stopped-content shown-after-first-attempt">You clicked after <span id="actual">0</span> seconds, which was accurate by <span id="accuracy">0</span> seconds.</p>
+    <script type="text/javascript" src="node_modules/joose-utils/js/joose-utils.min.js"></script>
+    <script type="text/javascript">
+
+    // set config for timer
+        var config = {
+            limit: 5000,
+            states: {
+                stopped: 'stopped',
+                running: 'started',
+                initial: 'initial'
+            }
+        }
+
+        // get DOM elements
+        var startButton       = document.getElementById('start-button');
+        var stopButton        = document.getElementById('stop-button');
+        var stoppedIndicator  = document.getElementById('actual');
+        var accuracyIndicator = document.getElementById('accuracy');
+
+        // set default variables
+        var startedTime = null;
+        var targetTime  = null;
+        var stoppedTime = null;
+        var actual      = null;
+
+        // stop console log code breaking legacy browsers, e.g. IE8
+        if (!window.console) window.console = function(){};
+
+        // functionality for a started timer event
+        var startTimer = function(e) {
+
+            // store the time started
+            startedTime = e.timeStamp;
+
+            // log the started time to the console
+            console.log('start timestamp:', startedTime);
+
+            // calculate and store the target time
+            targetTime = e.timeStamp + config.limit;
+
+            // log the target time to the console
+            console.log('target time:', targetTime);
+
+            // update the DOM to show relevant HTML
+            joose.utils.removeClass( document.body, config.states.initial );
+            joose.utils.removeClass( document.body, config.states.stopped );
+            joose.utils.addClass(    document.body, config.states.running );
+        }
+
+        // functionality fot a stopped timer event
+        var stopTimer = function(e) {
+
+            // record the time stopped
+            stoppedTime = e.timeStamp;
+
+            // log the time stopped to the console
+            console.log('stopped timestamp:', stoppedTime);
+
+            // calculate the user's actual response
+            actual = (stoppedTime - startedTime) / 1000;
+
+            // log the actual response
+            console.log('actual response:', actual);
+
+            // calculate the accuracy of the user's response
+            accuracy = (stoppedTime - targetTime) / 1000;
+
+            // log the accuracy of the response
+            console.log('accuracy:', accuracy);
+
+            // update the DOM to show relevant HTML
+            joose.utils.removeClass(document.body, config.states.running);
+            joose.utils.addClass(document.body, config.states.stopped);
+
+            // update the DOM to show the user the results
+            stoppedIndicator.innerHTML = actual;
+            accuracyIndicator.innerHTML = accuracy > 0 ? '+' + accuracy : accuracy;
+
+            // reset time variables to avoid conflicts
+            startedTime = null;
+            targetTime  = null;
+            stoppedTime = null;
+            actual      = null;
+        }
+
+        // attach event listeners to buttons
+        startButton.addEventListener('click', startTimer, false);
+        stopButton.addEventListener('click', stopTimer, false);
+
+    </script>
+</body>
+</html>
